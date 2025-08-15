@@ -118,6 +118,12 @@ body.dark .logo-wrap img {
   background: var(--accent-2);
 }
 
+.streak {
+  font-size: clamp(18px, 2.4vw, 22px);
+  margin: 0 0 12px;
+}
+
+
 /* ====== Подвал ====== */
 .site-footer {
   padding: 24px 0 40px;
@@ -129,4 +135,26 @@ body.dark .logo-wrap img {
 @media (max-width: 520px) {
   .actions { gap: 8px; }
   .btn { width: 100%; }
+}
+
+/* === Toast (всплывающее уведомление) === */
+.toast {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 12px 14px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.15);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity .2s ease, transform .2s ease;
+  z-index: 9999;
+  pointer-events: none; /* не мешает кликам по странице */
+}
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
 }
