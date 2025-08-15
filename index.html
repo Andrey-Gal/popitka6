@@ -1,13 +1,57 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>popitka6</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>popitka6 — мини-песочница</title>
 
+  <!-- Иконка вкладки (опционально, если добавишь /logo/favicon.ico) -->
+  <link rel="icon" href="./logo/favicon.ico" />
+
+  <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
-    <P>Hello Word!!!!git</P>
-    <img src="./logo/logo.png" alt="logo">
+  <header class="site-header">
+    <div class="container">
+      <h1 class="title">Привет! Это твоя песочница</h1>
+      <p class="subtitle">Тренируем связку «Андрей + ИИ» ⚡</p>
+    </div>
+  </header>
+
+    <main class="container">
+      <figure class="logo-wrap">
+        <img src="./logo/logo.png" alt="Логотип проекта" />
+        <figcaption>Лого можно заменить в <code>/logo/logo.png</code></figcaption>
+      </figure>
+
+      <div class="card">
+        <p id="helloText">Hello World! git ✅</p>
+
+        <div class="actions">
+          <button id="greetBtn" class="btn">Привет, Андрей</button>
+          <button id="themeBtn" class="btn btn-secondary" aria-pressed="false">
+            🌙 Тёмная тема
+          </button>
+        </div>
+      </div>
+
+      <section class="card">
+        <h2>Зачем этот проект?</h2>
+        <ul>
+          <li>Быстро проверять идеи без страха что-то сломать.</li>
+          <li>Учиться формулировать запросы к ИИ чётко и по делу.</li>
+          <li>За 10–15 минут делать маленькие, но законченные фичи.</li>
+        </ul>
+      </section>
+    </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <small>© <span id="year"></span> Андрей + ИИ. Песочница popitka6.</small>
+    </div>
+  </footer>
+
+  <noscript>Включи JavaScript — без него кнопки грустят 😢</noscript>
+  <script src="./script.js"></script>
 </body>
 </html>
