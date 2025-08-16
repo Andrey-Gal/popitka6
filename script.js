@@ -6,9 +6,9 @@ const body = document.body;
 const themeBtn = document.getElementById('themeBtn');
 const THEME_KEY = 'andrey_theme';
 
-// восстановим состояние
-const saved = localStorage.getItem(THEME_KEY);
-if (saved === 'dark') {
+// восстановим состояние темы
+const savedTheme = localStorage.getItem(THEME_KEY);
+if (savedTheme === 'dark') {
   body.classList.add('dark');
   themeBtn.textContent = '☀️ Светлая тема';
   themeBtn.setAttribute('aria-pressed', 'true');
@@ -33,10 +33,31 @@ const phrases = [
 ];
 let idx = 0;
 
-greetBtn.addEventListener('click', () => {
-  helloText.textContent = phrases[idx];
-  idx = (idx + 1) % phrases.length;
-});
+// === Тост (ненавязчивое уведомление) ===
+function showToast(message, timeout = 1800) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = message;
+  document.body.appendChild(t);
+  requestAnimationFrame(() => t.classList.add('show'));
+  setTimeout(() => {
+    t.classList.remove('show');
+    setTimeout(() => t.remove(), 250);
+  }, timeout);
+}
+
+// === Вспомогалки для дат ===
+function yyyymmdd(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+function yesterdayStr() {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return yyyymmdd(d);
+}
 
 // === Стрик (серия дней) ===
 const streakValue = document.getElementById('streakValue');
@@ -45,64 +66,48 @@ const streakBtn   = document.getElementById('streakBtn');
 const STREAK_COUNT_KEY = 'andrey_streak_count';
 const STREAK_DATE_KEY  = 'andrey_streak_date';
 
-function yyyymmdd(d) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
-}
-
 function loadStreak() {
   const count = Number(localStorage.getItem(STREAK_COUNT_KEY) || 0);
   streakValue.textContent = count;
 }
 loadStreak();
 
-// === Toast (ненавязчивое уведомление) ===
-function showToast(message, timeout = 1800) {
-  const t = document.createElement('div');
-  t.className = 'toast';
-  t.textContent = message;
-  document.body.appendChild(t);
-  // показать в следующем кадре
-  requestAnimationFrame(() => t.classList.add('show'));
-  // убрать через timeout
-  setTimeout(() => {
-    t.classList.remove('show');
-    setTimeout(() => t.remove(), 250);
-  }, timeout);
-}
-
-
-streakBtn.addEventListener('click', () => {
+// Универсальная функция: засчитать сегодня (автоповтор не даём)
+function markStreakToday() {
   const today = yyyymmdd(new Date());
   const last  = localStorage.getItem(STREAK_DATE_KEY);
   let count   = Number(localStorage.getItem(STREAK_COUNT_KEY) || 0);
 
   if (last === today) {
-  showToast('Сегодня уже засчитано ✅');
-  return;
-}
+    showToast('Сегодня уже засчитано ✅');
+    return false; // ничего не меняли
+  }
 
-
-  // если последний день — вчера, то серия продолжается, иначе начинается заново
-  const yesterday = (() => {
-    const d = new Date();
-    d.setDate(d.getDate() - 1);
-    return yyyymmdd(d);
-  })();
-
-  if (last === yesterday) {
-    count += 1;
+  if (last === yesterdayStr()) {
+    count += 1;        // продолжаем серию
   } else {
-    count = 1; // новая серия
+    count = 1;         // начинаем новую
   }
 
   localStorage.setItem(STREAK_COUNT_KEY, String(count));
   localStorage.setItem(STREAK_DATE_KEY, today);
   streakValue.textContent = count;
-  streakValue.textContent = count;
-showToast(`Засчитано! 🔥 Серия: ${count}`);
+  showToast(`Засчитано! 🔥 Серия: ${count}`);
+  return true; // серия обновлена
+}
 
-});
+// Кнопка «Засчитать сегодня»
+if (streakBtn) {
+  streakBtn.addEventListener('click', () => {
+    markStreakToday();
+  });
+}
 
+// «Привет, Андрей» — меняет фразу + АВТОзачёт серии
+if (greetBtn) {
+  greetBtn.addEventListener('click', () => {
+    helloText.textContent = phrases[idx];
+    idx = (idx + 1) % phrases.length;
+    markStreakToday();
+  });
+}
