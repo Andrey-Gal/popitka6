@@ -49,3 +49,7 @@
 Андрей Галкин
 [GitHub профиль](https://github.com/Andrey-Gal)
 
+## 🗓 Мой цикл
+
+👉 [Открыть расписание](https://andrey-gal.github.io/popitka6/schedule.html)
+
