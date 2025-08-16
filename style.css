@@ -118,6 +118,16 @@ body.dark .logo-wrap img {
   background: var(--accent-2);
 }
 
+.btn.secondary {
+  background: #e0e0e0;
+  color: #333;
+  border: 1px solid #ccc;
+}
+.btn.secondary:hover {
+  background: #d5d5d5;
+}
+
+
 .streak {
   font-size: clamp(18px, 2.4vw, 22px);
   margin: 0 0 12px;
