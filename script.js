@@ -59,55 +59,90 @@ function yesterdayStr() {
   return yyyymmdd(d);
 }
 
-// === Стрик (серия дней) ===
+// ===== Стрик (серия дней) =====
 const streakValue = document.getElementById('streakValue');
 const streakBtn   = document.getElementById('streakBtn');
-
 const STREAK_COUNT_KEY = 'andrey_streak_count';
 const STREAK_DATE_KEY  = 'andrey_streak_date';
 
-function loadStreak() {
+function yyyymmdd(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+function todayStr()      { return yyyymmdd(new Date()); }
+function yesterdayStr()  { const d=new Date(); d.setDate(d.getDate()-1); return yyyymmdd(d); }
+
+function pluralDays(n){
+  const a = n % 10, b = n % 100;
+  if (a === 1 && b !== 11) return 'день';
+  if (a >= 2 && a <= 4 && (b < 10 || b >= 20)) return 'дня';
+  return 'дней';
+}
+
+function renderStreak(){
   const count = Number(localStorage.getItem(STREAK_COUNT_KEY) || 0);
   streakValue.textContent = count;
-}
-loadStreak();
+  const w = document.getElementById('streakWord');
+  if (w) w.textContent = pluralDays(count);
 
-// Универсальная функция: засчитать сегодня (автоповтор не даём)
-function markStreakToday() {
-  const today = yyyymmdd(new Date());
+  // показать отладку, если ?debug=1
+  const dbgOn = location.search.includes('debug=1');
+  const dbg = document.getElementById('streakDebug');
+  if (dbg) {
+    if (dbgOn) {
+      const last = localStorage.getItem(STREAK_DATE_KEY) || '—';
+      dbg.style.display = '';
+      dbg.textContent = `DEBUG: count=${count}, last=${last}, today=${todayStr()}, yesterday=${yesterdayStr()}`;
+    } else {
+      dbg.style.display = 'none';
+    }
+  }
+}
+
+function showToast(message, timeout = 1800) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = message;
+  document.body.appendChild(t);
+  requestAnimationFrame(() => t.classList.add('show'));
+  setTimeout(() => {
+    t.classList.remove('show');
+    setTimeout(() => t.remove(), 250);
+  }, timeout);
+}
+
+/** Засчитать серию за сегодня
+ *  правило: last=today -> уже засчитано;
+ *           last=yesterday -> +1;
+ *           иначе -> 1 (старт заново)
+ */
+function markStreakToday(){
+  const today = todayStr();
   const last  = localStorage.getItem(STREAK_DATE_KEY);
   let count   = Number(localStorage.getItem(STREAK_COUNT_KEY) || 0);
 
   if (last === today) {
     showToast('Сегодня уже засчитано ✅');
-    return false; // ничего не меняли
+    return;
   }
-
   if (last === yesterdayStr()) {
-    count += 1;        // продолжаем серию
+    count = Math.max(1, count) + 1; // на всякий случай
   } else {
-    count = 1;         // начинаем новую
+    count = 1;
   }
 
   localStorage.setItem(STREAK_COUNT_KEY, String(count));
   localStorage.setItem(STREAK_DATE_KEY, today);
-  streakValue.textContent = count;
+  renderStreak();
   showToast(`Засчитано! 🔥 Серия: ${count}`);
-  return true; // серия обновлена
 }
 
-// Кнопка «Засчитать сегодня»
+// Кнопка
 if (streakBtn) {
-  streakBtn.addEventListener('click', () => {
-    markStreakToday();
-  });
+  streakBtn.addEventListener('click', markStreakToday);
 }
 
-// «Привет, Андрей» — меняет фразу + АВТОзачёт серии
-if (greetBtn) {
-  greetBtn.addEventListener('click', () => {
-    helloText.textContent = phrases[idx];
-    idx = (idx + 1) % phrases.length;
-    markStreakToday();
-  });
-}
+// Первый рендер при загрузке
+renderStreak();
