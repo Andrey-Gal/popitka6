@@ -1,54 +1,21 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Мой 8-дневный цикл — напоминалка</title>
-  <style>
-    :root {
-      --bg:#0f172a; --card:#111827; --text:#e5e7eb; --muted:#9ca3af;
-      --accent:#22c55e; --accent2:#3b82f6; --danger:#ef4444; --line:#1f2937;
-    }
-    @media (prefers-color-scheme: light){
-      :root{
-        --bg:#f3f4f6; --card:#fff; --text:#111827; --muted:#6b7280;
-        --accent:#16a34a; --accent2:#2563eb; --danger:#dc2626; --line:#e5e7eb;
-      }
-    }
-    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
-      font-family:system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial,sans-serif}
-    .wrap{max-width:780px;margin:0 auto;padding:16px}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:16px;
-      padding:16px;margin:12px 0;box-shadow:0 6px 24px rgba(0,0,0,.1)}
-    h1{font-size:clamp(22px,4.5vw,30px);margin:4px 0 12px}
-    h2{font-size:clamp(18px,4vw,22px);margin:0 0 8px}
-    .muted{color:var(--muted)} .small{font-size:13px}
-    .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-    .btn{border:1px solid var(--line);background:var(--card);color:var(--text);
-      padding:10px 14px;border-radius:10px;font-weight:600}
-    .btn-primary{background:var(--accent);border-color:transparent;color:#fff}
-    .btn-secondary{background:#e5e7eb;color:#111827;border-color:#d1d5db}
-    .btn-danger{background:var(--danger);border-color:transparent;color:#fff}
-    .pill{display:inline-block;background:#0ea5e9;color:#fff;border-radius:999px;
-      padding:6px 10px;font-weight:700}
-    .grid{display:grid;grid-template-columns:48px 1fr 1fr 1fr;gap:8px;align-items:center}
-    .th{font-size:14px;color:var(--muted)} .hr{height:1px;background:var(--line);margin:12px 0}
-    label.chk{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px}
-    input[type="checkbox"]{width:20px;height:20px}
-    .today{border:2px solid var(--accent)}
-    select,input[type="date"]{padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text)}
-  </style>
+  <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-  <div class="wrap">
+  <main class="container">
     <h1>🗓 Мой 8-дневный цикл</h1>
     <p class="muted small">Сохраняется на устройстве. Выбери дату старта и конкретный день цикла.</p>
 
     <!-- Старт цикла -->
-    <div class="card" id="startCard">
+    <section class="card" id="startCard">
       <h2>📍 Старт цикла</h2>
       <div class="row">
-        <input type="date" id="startInput" />
+        <input type="date" id="startInput">
         <select id="startIndex">
           <option value="1">День 1 — Дневная (1 из 2)</option>
           <option value="2">День 2 — Дневная (2 из 2)</option>
@@ -59,185 +26,42 @@
           <option value="7">День 7 — Отсыпной</option>
           <option value="8">День 8 — Выходной (после отсыпного)</option>
         </select>
-        <button class="btn btn-primary" id="saveStartBtn">Сохранить</button>
-        <button class="btn btn-danger" id="resetStartBtn">Сбросить</button>
+        <button class="btn" id="saveStartBtn">Сохранить</button>
+        <button class="btn secondary" id="resetStartBtn">Сбросить</button>
       </div>
       <p class="muted small" id="startInfo"></p>
-    </div>
+    </section>
 
     <!-- Сегодня -->
-    <div class="card today" id="todayCard" hidden>
+    <section class="card today" id="todayCard" hidden>
       <h2 id="todayTitle">Сегодня: день …</h2>
       <p class="muted" id="todayHint"></p>
+      <p class="muted" id="tomorrowLine"></p>
       <div id="todayTasks"></div>
       <div class="row" style="margin-top:8px">
-        <button class="btn" id="resetToday">Сбросить галочки</button>
+        <button class="btn secondary" id="resetToday">Сбросить галочки</button>
       </div>
-    </div>
+    </section>
 
-    <!-- Вся таблица -->
-    <div class="card">
+    <!-- Обзор цикла -->
+    <section class="card">
       <h2>Цикл (обзор)</h2>
       <div class="grid th">
         <div>День</div><div>Смена/режим</div><div>Учёба</div><div>Зал</div>
       </div>
       <div class="hr"></div>
       <div id="gridBody"></div>
-    </div>
+    </section>
 
-    <div class="card">
+    <section class="card">
       <div class="row">
         <a class="btn" href="./index.html">← На главную</a>
         <button class="btn btn-secondary" id="shareBtn">Поделиться ссылкой</button>
       </div>
       <p class="muted small">Отправь эту ссылку себе в Telegram и открывай на телефоне.</p>
-    </div>
-  </div>
+    </section>
+  </main>
 
-  <script>
-    // Модель 8-дневного цикла
-    const DAYS = [
-      { n:1, type:'day',   name:'Дневная смена (1 из 2)',   study:'Лёгкое повторение (15–20 мин)', gym:'Нет',  hint:'Лечь пораньше' },
-      { n:2, type:'day',   name:'Дневная смена (2 из 2)',   study:'Лёгкое повторение (15–20 мин)', gym:'Нет',  hint:'Экономим силы' },
-      { n:3, type:'off',   name:'Выходной (1 из 2)',        study:'Новые темы + проект',            gym:'Зал',  hint:'Сила: грудь/спина/руки' },
-      { n:4, type:'off',   name:'Выходной (2 из 2)',        study:'Новые темы + проект',            gym:'Зал',  hint:'Ноги/пресс + кардио' },
-      { n:5, type:'night', name:'Ночная смена (1 из 2)',    study:'Короткое повторение (по желанию)', gym:'Нет', hint:'Сон днём' },
-      { n:6, type:'night', name:'Ночная смена (2 из 2)',    study:'Короткое повторение (по желанию)', gym:'Нет', hint:'Сон днём' },
-      { n:7, type:'rest',  name:'Отсыпной',                 study:'Только лёгкая теория до 30 мин', gym:'Нет',  hint:'Максимум сна' },
-      { n:8, type:'off',   name:'Выходной (после отсыпного)', study:'Полноценная учёба + проект',   gym:'Зал',  hint:'Средняя нагрузка' },
-    ];
-
-    // Ключи хранилища
-    const KEY_START_DATE  = 'andrey_cycle_start_date';
-    const KEY_START_INDEX = 'andrey_cycle_start_index';
-
-    // Утилиты
-    const todayISO = () => {
-      const d = new Date();
-      const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0');
-      return `${y}-${m}-${day}`;
-    };
-    const checksKey = () => `andrey_checks_${todayISO()}`;
-    const toMidnight = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
-
-    // Рендер сетки
-    function renderGrid() {
-      const wrap = document.getElementById('gridBody');
-      wrap.innerHTML = '';
-      DAYS.forEach(d => {
-        const row = document.createElement('div');
-        row.className = 'grid';
-        row.innerHTML = `
-          <div><span class="pill">${d.n}</span></div>
-          <div>${d.name}</div>
-          <div>${d.study}</div>
-          <div>${d.gym}</div>
-        `;
-        wrap.appendChild(row);
-      });
-    }
-
-    // Определение текущего дня цикла с учётом выбранного стартового индекса
-    function getCycleDay(startDate, startIndex, now) {
-      const a = toMidnight(startDate);
-      const b = toMidnight(now);
-      const diff = Math.floor((b - a) / 86400000); // число суток
-      const shift = ((diff % 8) + 8) % 8;
-      // стартовый индекс 1..8 -> переводим в 0..7
-      const base = (Number(startIndex) - 1 + shift) % 8;
-      return base + 1; // 1..8
-    }
-
-    // Рендер "Сегодня"
-    function renderToday(dayIdx) {
-      const model = DAYS[dayIdx - 1];
-      document.getElementById('todayTitle').textContent = `Сегодня: день ${dayIdx} — ${model.name}`;
-      document.getElementById('todayHint').textContent  = model.hint;
-
-      const holder = document.getElementById('todayTasks');
-      holder.innerHTML = '';
-      const saved = JSON.parse(localStorage.getItem(checksKey()) || '{}');
-
-      const tasks = [];
-      if (model.gym === 'Зал') tasks.push({ id:'gym', label:'Зал / тренировка' });
-      if (model.type === 'day')   tasks.push({ id:'sleep', label:'Лечь пораньше' });
-      if (model.type === 'night') tasks.push({ id:'sleep', label:'Сон днём' });
-      if (model.type === 'rest')  tasks.push({ id:'sleep', label:'Отсыпной — максимум сна' });
-      // Учёба
-      if (/по желанию/i.test(model.study)) {
-        tasks.push({ id:'study', label:'Учёба (по желанию): коротко' });
-      } else {
-        tasks.push({ id:'study', label:`Учёба: ${model.study}` });
-      }
-
-      tasks.forEach(t => {
-        const lab = document.createElement('label');
-        lab.className = 'chk';
-        lab.innerHTML = `<input type="checkbox" id="t_${t.id}"><span>${t.label}</span>`;
-        holder.appendChild(lab);
-        const cb = lab.querySelector('input');
-        cb.checked = !!saved[t.id];
-        cb.addEventListener('change', () => {
-          const data = JSON.parse(localStorage.getItem(checksKey()) || '{}');
-          data[t.id] = cb.checked;
-          localStorage.setItem(checksKey(), JSON.stringify(data));
-        });
-      });
-
-      document.getElementById('resetToday').onclick = () => {
-        localStorage.removeItem(checksKey());
-        renderToday(dayIdx);
-      };
-    }
-
-    // Работа со стартом
-    const startInput = document.getElementById('startInput');
-    const startIndexSelect = document.getElementById('startIndex');
-    const startInfo = document.getElementById('startInfo');
-
-    function loadStart() {
-      const dateVal  = localStorage.getItem(KEY_START_DATE);
-      const indexVal = localStorage.getItem(KEY_START_INDEX);
-      if (dateVal && indexVal) {
-        startInput.value = dateVal;
-        startIndexSelect.value = indexVal;
-        const dayIdx = getCycleDay(new Date(dateVal), Number(indexVal), new Date());
-        startInfo.textContent = `Старт: ${dateVal}, выбран «День ${indexVal}». Сегодня — день ${dayIdx} из 8.`;
-        document.getElementById('todayCard').hidden = false;
-        renderToday(dayIdx);
-      } else {
-        startInfo.textContent = 'Выбери дату и конкретный день цикла, затем нажми «Сохранить».';
-        document.getElementById('todayCard').hidden = true;
-      }
-    }
-
-    document.getElementById('saveStartBtn').addEventListener('click', () => {
-      if (!startInput.value) { alert('Выбери дату старта'); return; }
-      localStorage.setItem(KEY_START_DATE, startInput.value);
-      localStorage.setItem(KEY_START_INDEX, startIndexSelect.value);
-      loadStart();
-    });
-
-    document.getElementById('resetStartBtn').addEventListener('click', () => {
-      localStorage.removeItem(KEY_START_DATE);
-      localStorage.removeItem(KEY_START_INDEX);
-      loadStart();
-    });
-
-    // Поделиться ссылкой
-    document.getElementById('shareBtn').addEventListener('click', async () => {
-      const url = location.href;
-      if (navigator.share) {
-        try { await navigator.share({ title:'Мой 8-дневный цикл', url }); } catch(e){}
-      } else {
-        await navigator.clipboard.writeText(url);
-        alert('Ссылка скопирована в буфер обмена');
-      }
-    });
-
-    // init
-    renderGrid();
-    loadStart();
-  </script>
+  <script src="./schedule.js"></script>
 </body>
 </html>

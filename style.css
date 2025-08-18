@@ -168,3 +168,31 @@ body.dark .logo-wrap img {
   opacity: 1;
   transform: translateY(0);
 }
+
+/* ===== Доп. утилиты для schedule ===== */
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.muted{color:var(--muted)} .small{font-size:13px}
+.today{border:2px solid var(--accent)}
+.hr{height:1px;background:var(--border);margin:12px 0}
+
+/* Табличка-обзор */
+.grid{display:grid;grid-template-columns:48px 1fr 1fr 1fr;gap:8px;align-items:center}
+.grid.th{color:var(--muted);font-size:14px}
+.pill{display:inline-block;background:#0ea5e9;color:#fff;border-radius:999px;
+      padding:6px 10px;font-weight:700}
+
+/* Чекбоксы-дела */
+label.chk{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:12px}
+label.chk input[type="checkbox"]{width:20px;height:20px}
+
+/* Toast (общий для проекта) */
+.toast{
+  position:fixed; right:16px; bottom:16px;
+  background:var(--card); color:var(--text);
+  border:1px solid var(--border); padding:12px 14px;
+  border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.15);
+  opacity:0; transform:translateY(8px);
+  transition:opacity .2s ease, transform .2s ease;
+  z-index:9999; pointer-events:none;
+}
+.toast.show{opacity:1; transform:translateY(0)}
