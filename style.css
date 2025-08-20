@@ -196,3 +196,29 @@ label.chk input[type="checkbox"]{width:20px;height:20px}
   z-index:9999; pointer-events:none;
 }
 .toast.show{opacity:1; transform:translateY(0)}
+
+/* Ряд ссылок внизу */
+.link-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 12px;
+}
+.link-row .btn { min-width: 220px; }
+
+/* Мелкие экраны */
+@media (max-width: 640px) {
+  .container { padding: 12px; }
+  .card { padding: 16px; margin: 12px 0; }
+  .btn { width: 100%; }
+  .logo-wrap img { max-width: 140px; width: 45%; }
+  .streak { font-size: 18px; }
+}
+
+/* Очень узкие */
+@media (max-width: 380px) {
+  .title { font-size: 24px; }
+  .subtitle { font-size: 14px; }
+  .btn { padding: 10px 12px; }
+}
