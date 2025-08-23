@@ -222,3 +222,12 @@ label.chk input[type="checkbox"]{width:20px;height:20px}
   .subtitle { font-size: 14px; }
   .btn { padding: 10px 12px; }
 }
+
+.quote {
+  font-size: clamp(16px, 2.2vw, 18px);
+  line-height: 1.5;
+  margin: 8px 0 0;
+  padding-left: 12px;
+  border-left: 3px solid var(--accent-2);
+  color: var(--text);
+}

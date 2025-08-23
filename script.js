@@ -129,3 +129,83 @@ greetBtn?.addEventListener('click', () => {
 
 // Первый рендер
 renderStreak();
+
+// === Цитата дня ===
+// Переиспользуем dayNum, если он уже объявлен (для стрика)
+function dayNum(d = new Date()) {
+  const x = new Date(d.getTime());
+  x.setHours(0,0,0,0);
+  return Math.floor(x.getTime() / 86400000);
+}
+
+// Подборка (можешь смело править и дополнять)
+const QUOTES = [
+  'Лучше сделать маленькую фичу сегодня, чем большую «когда-нибудь».',
+  'Секрет прогресса — в ежедневной практике по 15–30 минут.',
+  'Чистый код — это доброта к себе из будущего.',
+  'Ошибки — это подсказки. Чиним и идём дальше.',
+  'Глаза намётанные — баги испуганные 😄',
+];
+
+const Q_TEXT_ID   = 'qText';
+const Q_COPY_ID   = 'qCopy';
+const Q_DEBUG_ID  = 'qQuoteDebug';
+const Q_DAY_KEY   = 'andrey_quote_daynum';
+const Q_INDEX_KEY = 'andrey_quote_index';
+
+function pickQuoteIndex(prev) {
+  // чтоб не повторялась подряд — крутим по кругу
+  const next = (typeof prev === 'number') ? (prev + 1) % QUOTES.length : 0;
+  return next;
+}
+
+function renderQuote() {
+  const el = document.getElementById(Q_TEXT_ID);
+  if (!el) return;
+
+  const today = dayNum();
+  const storedDay  = Number(localStorage.getItem(Q_DAY_KEY));
+  let   storedIdx  = localStorage.getItem(Q_INDEX_KEY);
+  storedIdx = storedIdx === null ? null : Number(storedIdx);
+
+  let idx;
+  if (storedDay === today && typeof storedIdx === 'number') {
+    idx = storedIdx;                // тот же день — та же цитата
+  } else {
+    idx = pickQuoteIndex(storedIdx); // новый день — следующая
+    localStorage.setItem(Q_DAY_KEY, String(today));
+    localStorage.setItem(Q_INDEX_KEY, String(idx));
+  }
+
+  el.textContent = QUOTES[idx];
+
+  // debug строка по ?debug=1
+  const dbgOn = location.search.includes('debug=1');
+  const dbg = document.getElementById(Q_DEBUG_ID);
+  if (dbg) {
+    if (dbgOn) {
+      dbg.style.display = '';
+      dbg.textContent = `QUOTE DEBUG: idx=${idx}, day=${today}`;
+    } else {
+      dbg.style.display = 'none';
+    }
+  }
+}
+
+// Кнопка «Скопировать»
+(function wireQuoteCopy(){
+  const btn = document.getElementById(Q_COPY_ID);
+  const el  = document.getElementById(Q_TEXT_ID);
+  if (!btn || !el) return;
+  btn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(el.textContent || '');
+      if (typeof showToast === 'function') showToast('Цитата скопирована ✅');
+    } catch {
+      if (typeof showToast === 'function') showToast('Не удалось скопировать 😅');
+    }
+  });
+})();
+
+// Рендер при загрузке
+renderQuote();
