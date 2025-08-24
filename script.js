@@ -11,10 +11,8 @@ const THEME_KEY = 'andrey_theme';
 const savedTheme = localStorage.getItem(THEME_KEY);
 if (savedTheme === 'dark') {
   body.classList.add('dark');
-  if (themeBtn) {
-    themeBtn.textContent = '☀️ Светлая тема';
-    themeBtn.setAttribute('aria-pressed', 'true');
-  }
+  themeBtn && themeBtn.setAttribute('aria-pressed', 'true');
+  themeBtn && (themeBtn.textContent = '☀️ Светлая тема');
 }
 themeBtn?.addEventListener('click', () => {
   const isDark = body.classList.toggle('dark');
@@ -67,7 +65,7 @@ const streakValue = document.getElementById('streakValue');
 const streakBtn   = document.getElementById('streakBtn');
 
 const STREAK_COUNT_KEY  = 'andrey_streak_count';
-const STREAK_DAYNUM_KEY = 'andrey_streak_daynum'; // номер суток
+const STREAK_DAYNUM_KEY = 'andrey_streak_daynum';
 
 // Миграция со старого ключа YYYY-MM-DD -> daynum (если вдруг остался)
 (function migrateStreak() {
@@ -82,13 +80,13 @@ const STREAK_DAYNUM_KEY = 'andrey_streak_daynum'; // номер суток
 
 function renderStreak() {
   const count = Number(localStorage.getItem(STREAK_COUNT_KEY) || 0);
-  streakValue.textContent = count;
 
-  // слово «день/дня/дней»
+  // число и слово
+  if (streakValue) streakValue.textContent = count;
   const w = document.getElementById('streakWord');
   if (w) w.textContent = pluralDays(count);
 
-  // === ПРОГРЕСС-БАР ИЗ 7 ТОЧЕК ===
+  // прогресс-бар из 7 точек
   const bar = document.getElementById('streakBar');
   if (bar) {
     bar.innerHTML = '';
@@ -98,6 +96,18 @@ function renderStreak() {
       dot.className = 'streak-dot' + (i < k ? ' on' : '');
       bar.appendChild(dot);
     }
+  }
+
+  // мини-строка «Цель 7 дней»
+  const mini = document.getElementById('streakTo7');
+  if (mini) {
+    const TARGET = 7;
+    const shown = Math.min(count, TARGET);
+    const left  = Math.max(0, TARGET - shown);
+    mini.textContent =
+      (count < TARGET)
+        ? `Цель 7 дней: ${shown} / ${TARGET} — осталось ${left}`
+        : `Цель 7 дней: ${TARGET} / ${TARGET} ✅${count > TARGET ? ` (ещё +${count - TARGET})` : ''}`;
   }
 
   // debug по ?debug=1
@@ -139,7 +149,6 @@ function markStreakToday() {
   showToast(`Засчитано! 🔥 Серия: ${count}`);
 }
 
-// Скрытый сброс: Shift + клик по «Ручной зачёт»
 function resetStreak(){
   localStorage.removeItem(STREAK_COUNT_KEY);
   localStorage.removeItem(STREAK_DAYNUM_KEY);
@@ -147,14 +156,11 @@ function resetStreak(){
   showToast('Серия сброшена ↩️');
 }
 
-/* =========================
-   ОБРАБОТЧИКИ
-========================= */
+/* обработчики стрика */
 streakBtn?.addEventListener('click', (e) => {
   if (e.shiftKey) { e.preventDefault(); resetStreak(); return; }
   markStreakToday();
 });
-
 greetBtn?.addEventListener('click', () => {
   if (helloText) {
     helloText.textContent = phrases[phraseIdx];
@@ -163,7 +169,7 @@ greetBtn?.addEventListener('click', () => {
   markStreakToday();
 });
 
-// Первый рендер стрика
+// первый рендер стрика
 renderStreak();
 
 /* =========================
@@ -176,6 +182,8 @@ const QUOTES = [
   'Ошибки — это подсказки. Чиним и идём дальше.',
   'Глаза намётанные — баги испуганные 😄',
 ];
+
+// id-шники элементов и ключи хранилища
 const Q_TEXT_ID   = 'qText';
 const Q_COPY_ID   = 'qCopy';
 const Q_DEBUG_ID  = 'qQuoteDebug';
@@ -183,9 +191,8 @@ const Q_DAY_KEY   = 'andrey_quote_daynum';
 const Q_INDEX_KEY = 'andrey_quote_index';
 
 function pickQuoteIndex(prev) {
-  // чтоб не повторялась подряд — крутим по кругу
-  const next = (typeof prev === 'number') ? (prev + 1) % QUOTES.length : 0;
-  return next;
+  // чтобы не повторялась подряд — крутим по кругу
+  return (typeof prev === 'number') ? (prev + 1) % QUOTES.length : 0;
 }
 
 function renderQuote() {
@@ -199,7 +206,7 @@ function renderQuote() {
 
   let idx;
   if (storedDay === today && typeof storedIdx === 'number') {
-    idx = storedIdx;                // тот же день — та же цитата
+    idx = storedIdx;                 // тот же день — та же цитата
   } else {
     idx = pickQuoteIndex(storedIdx); // новый день — следующая
     localStorage.setItem(Q_DAY_KEY, String(today));
@@ -209,10 +216,9 @@ function renderQuote() {
   el.textContent = QUOTES[idx];
 
   // debug по ?debug=1
-  const dbgOn = location.search.includes('debug=1');
   const dbg = document.getElementById(Q_DEBUG_ID);
   if (dbg) {
-    if (dbgOn) {
+    if (location.search.includes('debug=1')) {
       dbg.style.display = '';
       dbg.textContent = `QUOTE DEBUG: idx=${idx}, day=${today}`;
     } else {
@@ -236,5 +242,5 @@ function renderQuote() {
   });
 })();
 
-// Рендер цитаты при загрузке
+// рендер цитаты при загрузке
 renderQuote();
