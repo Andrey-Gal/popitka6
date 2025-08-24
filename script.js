@@ -1,7 +1,9 @@
 // === Год в футере ===
 document.getElementById('year').textContent = new Date().getFullYear();
 
-// === Тёмная тема ===
+/* =========================
+   ТЁМНАЯ ТЕМА
+========================= */
 const body = document.body;
 const themeBtn = document.getElementById('themeBtn');
 const THEME_KEY = 'andrey_theme';
@@ -21,7 +23,9 @@ themeBtn?.addEventListener('click', () => {
   themeBtn.setAttribute('aria-pressed', String(isDark));
 });
 
-// === «Привет, Андрей» + автозачёт ===
+/* =========================
+   «ПРИВЕТ, АНДРЕЙ» (+ автозачёт)
+========================= */
 const greetBtn  = document.getElementById('greetBtn');
 const helloText = document.getElementById('helloText');
 const phrases = [
@@ -32,7 +36,9 @@ const phrases = [
 ];
 let phraseIdx = 0;
 
-// === Утилиты ===
+/* =========================
+   УТИЛИТЫ
+========================= */
 function showToast(message, timeout = 1800) {
   const t = document.createElement('div');
   t.className = 'toast';
@@ -47,20 +53,21 @@ function pluralDays(n){
   if (a >= 2 && a <= 4 && (b < 10 || b >= 20)) return 'дня';
   return 'дней';
 }
+// Номер календарных суток (локальная полночь)
+function dayNum(d = new Date()) {
+  const x = new Date(d.getTime());
+  x.setHours(0,0,0,0);
+  return Math.floor(x.getTime() / 86400000);
+}
 
-// === Стрик (устойчив к часовым поясам) ===
+/* =========================
+   СТРИК (устойчив к часовым поясам)
+========================= */
 const streakValue = document.getElementById('streakValue');
 const streakBtn   = document.getElementById('streakBtn');
 
 const STREAK_COUNT_KEY  = 'andrey_streak_count';
-const STREAK_DAYNUM_KEY = 'andrey_streak_daynum'; // номер суток (местная полночь)
-
-// Номер календарного дня относительно эпохи (полночь локального времени)
-function dayNum(d = new Date()) {
-  const x = new Date(d.getTime());
-  x.setHours(0, 0, 0, 0);
-  return Math.floor(x.getTime() / 86400000);
-}
+const STREAK_DAYNUM_KEY = 'andrey_streak_daynum'; // номер суток
 
 // Миграция со старого ключа YYYY-MM-DD -> daynum (если вдруг остался)
 (function migrateStreak() {
@@ -76,9 +83,24 @@ function dayNum(d = new Date()) {
 function renderStreak() {
   const count = Number(localStorage.getItem(STREAK_COUNT_KEY) || 0);
   streakValue.textContent = count;
+
+  // слово «день/дня/дней»
   const w = document.getElementById('streakWord');
   if (w) w.textContent = pluralDays(count);
 
+  // === ПРОГРЕСС-БАР ИЗ 7 ТОЧЕК ===
+  const bar = document.getElementById('streakBar');
+  if (bar) {
+    bar.innerHTML = '';
+    const k = Math.max(0, Math.min(7, count));
+    for (let i = 0; i < 7; i++) {
+      const dot = document.createElement('span');
+      dot.className = 'streak-dot' + (i < k ? ' on' : '');
+      bar.appendChild(dot);
+    }
+  }
+
+  // debug по ?debug=1
   const dbg = document.getElementById('streakDebug');
   if (dbg) {
     if (location.search.includes('debug=1')) {
@@ -117,8 +139,22 @@ function markStreakToday() {
   showToast(`Засчитано! 🔥 Серия: ${count}`);
 }
 
-// Кнопки
-streakBtn?.addEventListener('click', markStreakToday);
+// Скрытый сброс: Shift + клик по «Ручной зачёт»
+function resetStreak(){
+  localStorage.removeItem(STREAK_COUNT_KEY);
+  localStorage.removeItem(STREAK_DAYNUM_KEY);
+  renderStreak();
+  showToast('Серия сброшена ↩️');
+}
+
+/* =========================
+   ОБРАБОТЧИКИ
+========================= */
+streakBtn?.addEventListener('click', (e) => {
+  if (e.shiftKey) { e.preventDefault(); resetStreak(); return; }
+  markStreakToday();
+});
+
 greetBtn?.addEventListener('click', () => {
   if (helloText) {
     helloText.textContent = phrases[phraseIdx];
@@ -127,18 +163,12 @@ greetBtn?.addEventListener('click', () => {
   markStreakToday();
 });
 
-// Первый рендер
+// Первый рендер стрика
 renderStreak();
 
-// === Цитата дня ===
-// Переиспользуем dayNum, если он уже объявлен (для стрика)
-function dayNum(d = new Date()) {
-  const x = new Date(d.getTime());
-  x.setHours(0,0,0,0);
-  return Math.floor(x.getTime() / 86400000);
-}
-
-// Подборка (можешь смело править и дополнять)
+/* =========================
+   ЦИТАТА ДНЯ
+========================= */
 const QUOTES = [
   'Лучше сделать маленькую фичу сегодня, чем большую «когда-нибудь».',
   'Секрет прогресса — в ежедневной практике по 15–30 минут.',
@@ -146,7 +176,6 @@ const QUOTES = [
   'Ошибки — это подсказки. Чиним и идём дальше.',
   'Глаза намётанные — баги испуганные 😄',
 ];
-
 const Q_TEXT_ID   = 'qText';
 const Q_COPY_ID   = 'qCopy';
 const Q_DEBUG_ID  = 'qQuoteDebug';
@@ -179,7 +208,7 @@ function renderQuote() {
 
   el.textContent = QUOTES[idx];
 
-  // debug строка по ?debug=1
+  // debug по ?debug=1
   const dbgOn = location.search.includes('debug=1');
   const dbg = document.getElementById(Q_DEBUG_ID);
   if (dbg) {
@@ -200,12 +229,12 @@ function renderQuote() {
   btn.addEventListener('click', async () => {
     try {
       await navigator.clipboard.writeText(el.textContent || '');
-      if (typeof showToast === 'function') showToast('Цитата скопирована ✅');
+      showToast?.('Цитата скопирована ✅');
     } catch {
-      if (typeof showToast === 'function') showToast('Не удалось скопировать 😅');
+      showToast?.('Не удалось скопировать 😅');
     }
   });
 })();
 
-// Рендер при загрузке
+// Рендер цитаты при загрузке
 renderQuote();

@@ -231,3 +231,10 @@ label.chk input[type="checkbox"]{width:20px;height:20px}
   border-left: 3px solid var(--accent-2);
   color: var(--text);
 }
+
+/* --- Streak progress (7 dots) --- */
+.streak-bar{display:flex;gap:6px;margin:8px 0 4px}
+.streak-dot{width:10px;height:10px;border-radius:999px;background:var(--border);transition:transform .12s ease}
+.streak-dot.on{background:var(--accent)}
+.streak-dot.on:hover{transform:scale(1.15)}
+@media (max-width:520px){ .streak-bar{justify-content:center} }
