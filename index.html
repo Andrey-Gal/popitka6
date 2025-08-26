@@ -4,21 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <meta name="description" content="Учебный проект Андрея: тема, цитаты, стрик, расписание смен.">
-<meta property="og:title" content="Popitka6 — песочница Андрея">
-<meta property="og:description" content="Светлая/тёмная тема, стрик и расписание смен.">
-<meta property="og:image" content="https://andrey-gal.github.io/popitka6/assets/demo.png">
-<meta property="og:type" content="website">
+  <!-- SEO / Share -->
+  <meta name="description" content="Учебный проект Андрея: тема, цитаты, стрик, расписание смен.">
+  <meta property="og:title" content="Popitka6 — песочница Андрея">
+  <meta property="og:description" content="Светлая/тёмная тема, стрик и расписание смен.">
+  <meta property="og:image" content="https://andrey-gal.github.io/popitka6/assets/demo.png">
+  <meta property="og:type" content="website">
 
-<link rel="icon" href="./logo/logo.png" type="image/png">
-<link rel="apple-touch-icon" href="./logo/logo.png">
-
+  <link rel="icon" href="./logo/logo.png" type="image/png">
+  <link rel="apple-touch-icon" href="./logo/logo.png">
 
   <title>popitka6 — мини-песочница</title>
-
-
-
-
 
   <link rel="stylesheet" href="./style.css" />
 </head>
@@ -28,90 +24,76 @@
       <h1 class="title">Привет! Это твоя песочница</h1>
       <p class="subtitle">Тренируем связку «Андрей + ИИ» ⚡</p>
     </div>
-
   </header>
 
-    <main class="container">
-      <figure class="logo-wrap">
-        <img src="./logo/logo.png" alt="Логотип проекта" />
-        <figcaption>Лого можно заменить в <code>/logo/logo.png</code></figcaption>
-      </figure>
+  <main class="container">
+    <figure class="logo-wrap">
+      <img src="./logo/logo.png" alt="Логотип проекта" />
+      <figcaption>Лого можно заменить в <code>/logo/logo.png</code></figcaption>
+    </figure>
 
-      <div class="card">
-        <p id="helloText">Hello World! git ✅</p>
-
-        <div class="actions">
-          <button id="greetBtn" class="btn">Привет, Андрей</button>
-          <button id="themeBtn" class="btn btn-secondary" aria-pressed="false">
-            🌙 Тёмная тема
-          </button>
-        </div>
+    <div class="card">
+      <p id="helloText">Hello World! git ✅</p>
+      <div class="actions">
+        <button id="greetBtn" class="btn">Привет, Андрей</button>
+        <button id="themeBtn" class="btn btn-secondary" aria-pressed="false">🌙 Тёмная тема</button>
       </div>
+    </div>
 
-      <section class="card">
-        <h2>Зачем этот проект?</h2>
-        <ul>
-          <li>Быстро проверять идеи без страха что-то сломать.</li>
-          <li>Учиться формулировать запросы к ИИ чётко и по делу.</li>
-          <li>За 10–15 минут делать маленькие, но законченные фичи.</li>
-        </ul>
-      </section>
+    <section class="card">
+      <h2>Зачем этот проект?</h2>
+      <ul>
+        <li>Быстро проверять идеи без страха что-то сломать.</li>
+        <li>Учиться формулировать запросы к ИИ чётко и по делу.</li>
+        <li>За 10–15 минут делать маленькие, но законченные фичи.</li>
+      </ul>
+    </section>
 
-      <section class="card">
-  <h2>Цитата дня</h2>
-  <blockquote id="qText" class="quote">…загрузка…</blockquote>
-  <div class="actions">
-    <button id="qCopy" class="btn secondary">Скопировать</button>
-  </div>
-  <small class="muted" id="qQuoteDebug" style="display:none"></small>
-</section>
+    <section class="card">
+      <h2>Цитата дня</h2>
+      <blockquote id="qText" class="quote">…загрузка…</blockquote>
+      <div class="actions">
+        <button id="qCopy" class="btn secondary">Скопировать</button>
+      </div>
+      <small class="muted" id="qQuoteDebug" style="display:none"></small>
+    </section>
 
+    <section class="card">
+      <h2>Серия дней</h2>
+      <p class="streak">
+        🔥 Текущая серия: <strong id="streakValue">0</strong> <span id="streakWord">дней</span>
+      </p>
 
-      <section class="card">
-  <h2>Серия дней</h2>
-  <p class="streak">🔥 Текущая серия: <strong id="streakValue">0</strong> <span id="streakWord">дней</span></p>
+      <div id="streakBar" class="streak-bar" aria-label="Прогресс за 7 дней"></div>
 
-<div id="streakBar" class="streak-bar" aria-label="Прогресс за 7 дней"></div>
+      <small class="muted" id="streakDebug" style="display:none"></small>
+      <small class="muted streak-to7" id="streakTo7"></small>
 
+      <div class="actions">
+        <button id="streakBtn" class="btn secondary">Ручной зачёт</button>
+      </div>
+      <small class="muted">Нажимай раз в день — серия сохранится.</small>
+    </section>
+  </main>
 
-    <small class="muted" id="streakDebug" style="display:none"></small>
+  <!-- Навигация: цикл и портфолио -->
+  <section class="container" aria-label="Быстрые ссылки" style="text-align:center; margin-top:24px;">
+    <a class="btn" href="./schedule.html">📅 Мой цикл</a>
 
-<small class="muted" id="streakTo7" style="display:block;margin-top:4px"></small>
+    <div class="link-row">
+      <a
+        class="btn"
+        href="https://andrey-gal.github.io/local-portfolio/"
+        target="_blank" rel="noopener noreferrer"
+      >📔 Портфолио (демо)</a>
 
-
-  <div class="actions">
-    <button id="streakBtn" class="btn secondary">Ручной зачёт</button>
-
-  </div>
-  <small class="muted">Нажимай раз в день — серия сохранится.</small>
-</section>
-
-    </main>
-
-    <!-- Навигация: цикл и портфолио -->
-<section class="container" aria-label="Быстрые ссылки" style="text-align:center; margin-top:24px;">
-  <!-- Кнопка на страницу цикла -->
-  <a class="btn" href="./schedule.html">📅 Мой цикл</a>
-
-  <!-- Ряд ссылок (резиновый, уходит в колонку на узких экранах) -->
-  <div class="link-row">
-    <a
-      class="btn"
-      href="https://andrey-gal.github.io/local-portfolio/"
-      target="_blank"
-      rel="noopener noreferrer"
-    >📔 Портфолио (демо)</a>
-
-    <a
-      class="btn secondary"
-      href="https://github.com/Andrey-Gal/local-portfolio"
-      target="_blank"
-      rel="noopener noreferrer"
-    >💻 Портфолио (исходники)</a>
-  </div>
-</section>
-
-
+      <a
+        class="btn secondary"
+        href="https://github.com/Andrey-Gal/local-portfolio"
+        target="_blank" rel="noopener noreferrer"
+      >💻 Портфолио (исходники)</a>
+    </div>
+  </section>
 
   <footer class="site-footer">
     <div class="container">

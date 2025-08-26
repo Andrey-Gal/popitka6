@@ -22,19 +22,6 @@ themeBtn?.addEventListener('click', () => {
 });
 
 /* =========================
-   «ПРИВЕТ, АНДРЕЙ» (+ автозачёт)
-========================= */
-const greetBtn  = document.getElementById('greetBtn');
-const helloText = document.getElementById('helloText');
-const phrases = [
-  'Привет, Андрей! 🚀 Поехали!',
-  'Делаем маленькие шаги, но каждый — вперёд 💪',
-  'Сегодня +1 фича. Завтра — +ещё одна. Так побеждают!',
-  'ИИ — напарник. Решения — твои. ✨',
-];
-let phraseIdx = 0;
-
-/* =========================
    УТИЛИТЫ
 ========================= */
 function showToast(message, timeout = 1800) {
@@ -59,15 +46,24 @@ function dayNum(d = new Date()) {
 }
 
 /* =========================
+   «ПРИВЕТ, АНДРЕЙ» (+ автозачёт)
+========================= */
+const greetBtn  = document.getElementById('greetBtn');
+const helloText = document.getElementById('helloText');
+const phrases = [
+  'Привет, Андрей! 🚀 Поехали!',
+  'Делаем маленькие шаги, но каждый — вперёд 💪',
+  'Сегодня +1 фича. Завтра — +ещё одна. Так побеждают!',
+  'ИИ — напарник. Решения — твои. ✨',
+];
+let phraseIdx = 0;
+
+/* =========================
    СТРИК (устойчив к часовым поясам)
 ========================= */
-const streakValue = document.getElementById('streakValue');
-const streakBtn   = document.getElementById('streakBtn');
-
 const STREAK_COUNT_KEY  = 'andrey_streak_count';
 const STREAK_DAYNUM_KEY = 'andrey_streak_daynum';
 
-// Миграция со старого ключа YYYY-MM-DD -> daynum (если вдруг остался)
 (function migrateStreak() {
   const old = localStorage.getItem('andrey_streak_date');
   if (old && !localStorage.getItem(STREAK_DAYNUM_KEY)) {
@@ -82,11 +78,12 @@ function renderStreak() {
   const count = Number(localStorage.getItem(STREAK_COUNT_KEY) || 0);
 
   // число и слово
-  if (streakValue) streakValue.textContent = count;
+  const valEl = document.getElementById('streakValue');
+  if (valEl) valEl.textContent = count;
   const w = document.getElementById('streakWord');
   if (w) w.textContent = pluralDays(count);
 
-  // прогресс-бар из 7 точек
+  // прогресс-бар 7 из точек
   const bar = document.getElementById('streakBar');
   if (bar) {
     bar.innerHTML = '';
@@ -98,7 +95,7 @@ function renderStreak() {
     }
   }
 
-  // мини-строка «Цель 7 дней»
+  // мини-подсказка “цель 7 дней”
   const mini = document.getElementById('streakTo7');
   if (mini) {
     const TARGET = 7;
@@ -110,7 +107,7 @@ function renderStreak() {
         : `Цель 7 дней: ${TARGET} / ${TARGET} ✅${count > TARGET ? ` (ещё +${count - TARGET})` : ''}`;
   }
 
-  // debug по ?debug=1
+  // DEBUG по ?debug=1
   const dbg = document.getElementById('streakDebug');
   if (dbg) {
     if (location.search.includes('debug=1')) {
@@ -123,11 +120,6 @@ function renderStreak() {
   }
 }
 
-/** Засчитать сегодня:
- * last==today   -> уже засчитано
- * last==today-1 -> +1 к серии
- * иначе         -> 1 (начать заново)
- */
 function markStreakToday() {
   const today = dayNum();
   const last  = Number(localStorage.getItem(STREAK_DAYNUM_KEY));
@@ -156,11 +148,13 @@ function resetStreak(){
   showToast('Серия сброшена ↩️');
 }
 
-/* обработчики стрика */
+// обработчики
+const streakBtn = document.getElementById('streakBtn');
 streakBtn?.addEventListener('click', (e) => {
   if (e.shiftKey) { e.preventDefault(); resetStreak(); return; }
   markStreakToday();
 });
+
 greetBtn?.addEventListener('click', () => {
   if (helloText) {
     helloText.textContent = phrases[phraseIdx];
@@ -169,7 +163,7 @@ greetBtn?.addEventListener('click', () => {
   markStreakToday();
 });
 
-// первый рендер стрика
+// первый рендер
 renderStreak();
 
 /* =========================
@@ -182,8 +176,6 @@ const QUOTES = [
   'Ошибки — это подсказки. Чиним и идём дальше.',
   'Глаза намётанные — баги испуганные 😄',
 ];
-
-// id-шники элементов и ключи хранилища
 const Q_TEXT_ID   = 'qText';
 const Q_COPY_ID   = 'qCopy';
 const Q_DEBUG_ID  = 'qQuoteDebug';
@@ -191,7 +183,6 @@ const Q_DAY_KEY   = 'andrey_quote_daynum';
 const Q_INDEX_KEY = 'andrey_quote_index';
 
 function pickQuoteIndex(prev) {
-  // чтобы не повторялась подряд — крутим по кругу
   return (typeof prev === 'number') ? (prev + 1) % QUOTES.length : 0;
 }
 
@@ -206,16 +197,15 @@ function renderQuote() {
 
   let idx;
   if (storedDay === today && typeof storedIdx === 'number') {
-    idx = storedIdx;                 // тот же день — та же цитата
+    idx = storedIdx;
   } else {
-    idx = pickQuoteIndex(storedIdx); // новый день — следующая
+    idx = pickQuoteIndex(storedIdx);
     localStorage.setItem(Q_DAY_KEY, String(today));
     localStorage.setItem(Q_INDEX_KEY, String(idx));
   }
 
   el.textContent = QUOTES[idx];
 
-  // debug по ?debug=1
   const dbg = document.getElementById(Q_DEBUG_ID);
   if (dbg) {
     if (location.search.includes('debug=1')) {
@@ -227,7 +217,6 @@ function renderQuote() {
   }
 }
 
-// Кнопка «Скопировать»
 (function wireQuoteCopy(){
   const btn = document.getElementById(Q_COPY_ID);
   const el  = document.getElementById(Q_TEXT_ID);
@@ -235,12 +224,10 @@ function renderQuote() {
   btn.addEventListener('click', async () => {
     try {
       await navigator.clipboard.writeText(el.textContent || '');
-      showToast?.('Цитата скопирована ✅');
+      showToast('Цитата скопирована ✅');
     } catch {
-      showToast?.('Не удалось скопировать 😅');
+      showToast('Не удалось скопировать 😅');
     }
   });
 })();
-
-// рендер цитаты при загрузке
 renderQuote();
