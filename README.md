@@ -120,3 +120,5 @@
 # любой статический сервер; пример с live-server
 live-server
 # или через VS Code: "Open with Live Server"
+
+- QA: см. [qa/SMOKE.md](qa/SMOKE.md)
