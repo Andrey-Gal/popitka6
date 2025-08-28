@@ -231,3 +231,32 @@ function renderQuote() {
   });
 })();
 renderQuote();
+
+// === Горячие клавиши ===
+// G — привет; T — тема; Enter — зачёт; Shift+Enter — сброс (с подтверждением)
+document.addEventListener('keydown', (e) => {
+  // не мешаем вводу в полях
+  const tag = document.activeElement?.tagName;
+  if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) return;
+  if (e.repeat) return; // игнор удержания
+
+  const k = e.key.toLowerCase();
+
+  if (k === 'g') {
+    // "Привет, Андрей"
+    greetBtn?.click();
+  } else if (k === 't') {
+    // тема
+    themeBtn?.click();
+  } else if (k === 'enter') {
+    e.preventDefault();
+    if (e.shiftKey) {
+      // сброс серии с подтверждением
+      if (confirm('Сбросить серию?')) resetStreak?.();
+    } else {
+      // зачесть сегодня
+      markStreakToday?.();
+    }
+  }
+});
+
