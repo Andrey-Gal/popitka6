@@ -11,8 +11,10 @@ const THEME_KEY = 'andrey_theme';
 const savedTheme = localStorage.getItem(THEME_KEY);
 if (savedTheme === 'dark') {
   body.classList.add('dark');
-  themeBtn && themeBtn.setAttribute('aria-pressed', 'true');
-  themeBtn && (themeBtn.textContent = '☀️ Светлая тема');
+  if (themeBtn) {
+    themeBtn.textContent = '☀️ Светлая тема';
+    themeBtn.setAttribute('aria-pressed', 'true');
+  }
 }
 themeBtn?.addEventListener('click', () => {
   const isDark = body.classList.toggle('dark');
@@ -64,6 +66,7 @@ let phraseIdx = 0;
 const STREAK_COUNT_KEY  = 'andrey_streak_count';
 const STREAK_DAYNUM_KEY = 'andrey_streak_daynum';
 
+// Миграция со старого ключа YYYY-MM-DD -> daynum (если вдруг остался)
 (function migrateStreak() {
   const old = localStorage.getItem('andrey_streak_date');
   if (old && !localStorage.getItem(STREAK_DAYNUM_KEY)) {
@@ -120,6 +123,7 @@ function renderStreak() {
   }
 }
 
+/** Засчитать сегодня */
 function markStreakToday() {
   const today = dayNum();
   const last  = Number(localStorage.getItem(STREAK_DAYNUM_KEY));
@@ -148,10 +152,12 @@ function resetStreak(){
   showToast('Серия сброшена ↩️');
 }
 
-// обработчики
+/* =========================
+   ОБРАБОТЧИКИ
+========================= */
 const streakBtn = document.getElementById('streakBtn');
 streakBtn?.addEventListener('click', (e) => {
-  if (e.shiftKey) { e.preventDefault(); resetStreak(); return; }
+  if (e.shiftKey) { e.preventDefault(); resetStreak(); return; } // скрытый сброс (без confirm)
   markStreakToday();
 });
 
@@ -163,7 +169,7 @@ greetBtn?.addEventListener('click', () => {
   markStreakToday();
 });
 
-// первый рендер
+// Первый рендер
 renderStreak();
 
 /* =========================
@@ -197,9 +203,9 @@ function renderQuote() {
 
   let idx;
   if (storedDay === today && typeof storedIdx === 'number') {
-    idx = storedIdx;
+    idx = storedIdx;                // тот же день — та же цитата
   } else {
-    idx = pickQuoteIndex(storedIdx);
+    idx = pickQuoteIndex(storedIdx); // новый день — следующая
     localStorage.setItem(Q_DAY_KEY, String(today));
     localStorage.setItem(Q_INDEX_KEY, String(idx));
   }
@@ -232,66 +238,98 @@ function renderQuote() {
 })();
 renderQuote();
 
-// === Горячие клавиши ===
-// G — привет; T — тема; Enter — зачёт; Shift+Enter — сброс (с подтверждением)
-document.addEventListener('keydown', (e) => {
-  // не мешаем вводу в полях
-  const tag = document.activeElement?.tagName;
-  if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) return;
-  if (e.repeat) return; // игнор удержания
+/* =========================
+   БЭКАП / ВОССТАНОВЛЕНИЕ БЕЗ МОДАЛОК
+========================= */
+// Вспомогалки панели импорта
+const importBox = document.getElementById('streakImportBox');
+const importTA  = document.getElementById('streakImportTA');
 
-  const k = e.key.toLowerCase();
+function showImportBox(prefill = '') {
+  if (!importBox) return;
+  importBox.classList.remove('hidden');
+  if (importTA) { importTA.value = prefill; importTA.focus(); importTA.select(); }
+}
+function hideImportBox() { importBox?.classList.add('hidden'); }
 
-  if (k === 'g') {
-    // "Привет, Андрей"
-    greetBtn?.click();
-  } else if (k === 't') {
-    // тема
-    themeBtn?.click();
-  } else if (k === 'enter') {
-    e.preventDefault();
-    if (e.shiftKey) {
-      // сброс серии с подтверждением
-      if (confirm('Сбросить серию?')) resetStreak?.();
-    } else {
-      // зачесть сегодня
-      markStreakToday?.();
-    }
-  }
-});
-
-// ===== Бэкап/восстановление стрика =====
-function exportStreak() {
-  const payload = {
+function makeBackupPayload(){
+  return {
     count: Number(localStorage.getItem(STREAK_COUNT_KEY) || 0),
     daynum: Number(localStorage.getItem(STREAK_DAYNUM_KEY) || 0),
     ts: Date.now()
   };
-  const blob = 'andrey-streak:' + btoa(JSON.stringify(payload));
-  navigator.clipboard.writeText(blob)
-    .then(() => showToast('Бэкап скопирован ✅'))
-    .catch(() => showToast('Не удалось скопировать 😅'));
+}
+function toBlobString(payload){
+  return 'andrey-streak:' + btoa(JSON.stringify(payload));
+}
+function parseBackup(raw){
+  const s = raw.trim();
+  if (!s.startsWith('andrey-streak:')) throw new Error('bad prefix');
+  const json = atob(s.replace(/^andrey-streak:/,''));
+  const data = JSON.parse(json);
+  if (typeof data.count !== 'number' || typeof data.daynum !== 'number') throw new Error('bad shape');
+  return { count: Math.max(0, Math.floor(data.count)), daynum: Math.floor(data.daynum) };
 }
 
-function importStreak() {
-  const raw = prompt('Вставь бэкап (строка начинается с andrey-streak:)');
-  if (!raw) return;
+async function exportStreak(){
+  const blob = toBlobString(makeBackupPayload());
   try {
-    const json = atob(raw.replace(/^andrey-streak:/,''));
-    const data = JSON.parse(json);
-    if (typeof data.count === 'number' && typeof data.daynum === 'number') {
-      localStorage.setItem(STREAK_COUNT_KEY, String(Math.max(0, Math.floor(data.count))));
-      localStorage.setItem(STREAK_DAYNUM_KEY, String(Math.floor(data.daynum)));
-      renderStreak();
-      showToast('Восстановлено ✅');
-    } else {
-      showToast('Неверный формат бэкапа 🧐');
-    }
+    await navigator.clipboard.writeText(blob);
+    showToast('Бэкап скопирован ✅');
   } catch {
-    showToast('Ошибка чтения бэкапа 😅');
+    // нет доступа к буферу — покажем панель и положим строку туда
+    showImportBox(blob);
+    showToast('Скопируй строку из поля ниже');
   }
 }
 
-// Кнопки бэкапа/восстановления
+async function importStreakFromClipboard(){
+  try {
+    const raw = await navigator.clipboard.readText();
+    const {count, daynum} = parseBackup(raw);
+    localStorage.setItem(STREAK_COUNT_KEY, String(count));
+    localStorage.setItem(STREAK_DAYNUM_KEY, String(daynum));
+    renderStreak(); hideImportBox();
+    showToast('Восстановлено ✅');
+  } catch {
+    // не дали доступ / пусто — открываем панель ручного ввода
+    showImportBox('');
+    showToast('Вставь строку бэкапа вручную');
+  }
+}
+function importStreakFromTextarea(){
+  if (!importTA) return;
+  try {
+    const {count, daynum} = parseBackup(importTA.value);
+    localStorage.setItem(STREAK_COUNT_KEY, String(count));
+    localStorage.setItem(STREAK_DAYNUM_KEY, String(daynum));
+    renderStreak(); hideImportBox();
+    showToast('Восстановлено ✅');
+  } catch {
+    showToast('Неверный формат бэкапа 🧐');
+  }
+}
+
+// Привязки
 document.getElementById('streakExport')?.addEventListener('click', exportStreak);
-document.getElementById('streakImport')?.addEventListener('click', importStreak);
+document.getElementById('streakImport')?.addEventListener('click', importStreakFromClipboard);
+document.getElementById('streakImportDo')?.addEventListener('click', importStreakFromTextarea);
+document.getElementById('streakImportHide')?.addEventListener('click', hideImportBox);
+
+/* =========================
+   ГОРЯЧИЕ КЛАВИШИ (без confirm)
+========================= */
+document.addEventListener('keydown', (e) => {
+  const tag = document.activeElement?.tagName;
+  if (['INPUT','TEXTAREA','SELECT'].includes(tag)) return;
+  if (e.repeat) return;
+  const k = e.key.toLowerCase();
+  if (k === 'g') {
+    greetBtn?.click();
+  } else if (k === 't') {
+    themeBtn?.click();
+  } else if (k === 'enter') {
+    e.preventDefault();
+    if (e.shiftKey) resetStreak(); else markStreakToday();
+  }
+});

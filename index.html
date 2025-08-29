@@ -73,6 +73,20 @@
   <button id="streakImport" class="btn secondary">Восстановить</button>
 </div>
 
+<!-- ↓ вставь ВОТ ЭТО СЮДА -->
+<div id="streakImportBox" class="import-box hidden" aria-live="polite">
+  <p class="muted small" style="margin:0 0 6px">
+    Если доступ к буферу не дали, вставь строку бэкапа сюда:
+  </p>
+  <textarea id="streakImportTA" rows="3"
+    style="width:100%;border:1px solid var(--border);border-radius:12px;padding:10px"></textarea>
+  <div class="actions" style="margin-top:8px">
+    <button id="streakImportDo" class="btn">Импортировать</button>
+    <button id="streakImportHide" class="btn secondary">Скрыть</button>
+  </div>
+</div>
+
+
 
       <div id="streakBar" class="streak-bar" aria-label="Прогресс за 7 дней"></div>
 
