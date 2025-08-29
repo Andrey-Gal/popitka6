@@ -260,3 +260,38 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+// ===== Бэкап/восстановление стрика =====
+function exportStreak() {
+  const payload = {
+    count: Number(localStorage.getItem(STREAK_COUNT_KEY) || 0),
+    daynum: Number(localStorage.getItem(STREAK_DAYNUM_KEY) || 0),
+    ts: Date.now()
+  };
+  const blob = 'andrey-streak:' + btoa(JSON.stringify(payload));
+  navigator.clipboard.writeText(blob)
+    .then(() => showToast('Бэкап скопирован ✅'))
+    .catch(() => showToast('Не удалось скопировать 😅'));
+}
+
+function importStreak() {
+  const raw = prompt('Вставь бэкап (строка начинается с andrey-streak:)');
+  if (!raw) return;
+  try {
+    const json = atob(raw.replace(/^andrey-streak:/,''));
+    const data = JSON.parse(json);
+    if (typeof data.count === 'number' && typeof data.daynum === 'number') {
+      localStorage.setItem(STREAK_COUNT_KEY, String(Math.max(0, Math.floor(data.count))));
+      localStorage.setItem(STREAK_DAYNUM_KEY, String(Math.floor(data.daynum)));
+      renderStreak();
+      showToast('Восстановлено ✅');
+    } else {
+      showToast('Неверный формат бэкапа 🧐');
+    }
+  } catch {
+    showToast('Ошибка чтения бэкапа 😅');
+  }
+}
+
+// Кнопки бэкапа/восстановления
+document.getElementById('streakExport')?.addEventListener('click', exportStreak);
+document.getElementById('streakImport')?.addEventListener('click', importStreak);
