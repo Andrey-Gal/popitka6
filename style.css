@@ -120,3 +120,31 @@ label.chk input[type="checkbox"]{width:20px;height:20px}
 
 .import-box { background: var(--card); border:1px solid var(--border); border-radius:12px; padding:12px; margin-top:8px; }
 .hidden { display:none; }
+
+/* Кнопка «Назад к проектам» — всегда на экране */
+.back-to-projects{
+  position: fixed;     /* прибита к углу, не прокручивается */
+  top: 12px;
+  left: 12px;
+  z-index: 1000;
+
+  display: inline-block;
+  padding: 10px 14px;
+  border-radius: 10px;
+  text-decoration: none;
+
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: 0 6px 14px rgba(0,0,0,.12);
+  transition: filter .15s ease, transform .06s ease;
+}
+.back-to-projects:hover{ filter: brightness(1.05); }
+.back-to-projects:active{ transform: translateY(1px) }
+
+/* тёмная тема */
+body.dark .back-to-projects{
+  background: #10131a;
+  color: #e5e7eb;
+  border-color: #1f2937;
+}
