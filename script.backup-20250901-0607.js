@@ -1,5 +1,4 @@
-// === Год в футере + базовый заголовок вкладки ===
-const BASE_TITLE = document.title;
+// === Год в футере ===
 document.getElementById('year').textContent = new Date().getFullYear();
 
 /* =========================
@@ -86,9 +85,6 @@ function renderStreak() {
   if (valEl) valEl.textContent = count;
   const w = document.getElementById('streakWord');
   if (w) w.textContent = pluralDays(count);
-
-  // 🔹 обновляем заголовок вкладки
-  document.title = count > 0 ? `🔥 ${count} — ${BASE_TITLE}` : BASE_TITLE;
 
   // прогресс-бар 7 из точек
   const bar = document.getElementById('streakBar');
