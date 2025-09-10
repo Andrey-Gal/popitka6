@@ -337,3 +337,9 @@ document.addEventListener('keydown', (e) => {
     if (e.shiftKey) resetStreak(); else markStreakToday();
   }
 });
+
+// === Двойной клик по строке "Серия дней" засчитывает день ===
+document.querySelector('.streak')?.addEventListener('dblclick', () => {
+  markStreakToday();
+  if (typeof showToast === 'function') showToast('Двойной клик — зачёт ⚡');
+});
