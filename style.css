@@ -148,3 +148,58 @@ body.dark .back-to-projects{
   color: #e5e7eb;
   border-color: #1f2937;
 }
+
+/* === Tiny Goal Timer (виджет) === */
+:root{
+  --tgt-bg: #ffffff;
+  --tgt-fg: #1f2937;
+  --tgt-accent: #10b981;
+  --tgt-muted: #9ca3af;
+  --tgt-shadow: 0 10px 30px rgba(0,0,0,.12);
+}
+html.dark :root{
+  --tgt-bg: #111827;
+  --tgt-fg: #e5e7eb;
+  --tgt-accent: #34d399;
+  --tgt-muted: #6b7280;
+  --tgt-shadow: 0 10px 30px rgba(0,0,0,.5);
+}
+.tgt{
+  position: fixed; right: 20px; bottom: 20px; z-index: 9999;
+  width: 300px; max-width: calc(100vw - 40px);
+  background: var(--tgt-bg); color: var(--tgt-fg);
+  border-radius: 16px; box-shadow: var(--tgt-shadow);
+  border: 1px solid rgba(0,0,0,.06); padding: 14px;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+.tgt__row{ display:flex; gap:10px; align-items:center; }
+.tgt__goal{
+  flex:1; padding:10px 12px; border-radius:12px;
+  border:1px solid rgba(0,0,0,.08); background:transparent;
+  color:inherit; outline:none;
+}
+.tgt__time{ font-variant-numeric: tabular-nums; font-size: 28px; font-weight: 700; letter-spacing: .5px; }
+.tgt__btn{
+  padding:8px 12px; border-radius:12px; border:none; cursor:pointer;
+  background:rgba(0,0,0,.06); color:inherit;
+}
+.tgt__btn--primary{ background: var(--tgt-accent); color:#052e1a; font-weight: 700; }
+.tgt__hint{ margin-top:8px; font-size:12px; color: var(--tgt-muted); display:flex; gap:12px; flex-wrap:wrap; }
+.tgt__hist{ margin-top:10px; max-height:120px; overflow:auto; padding-right:4px; }
+.tgt__hist li{ font-size:13px; padding:4px 0; border-bottom:1px dashed rgba(0,0,0,.08); }
+.tgt__ring{
+  position:relative; width:56px; height:56px; display:grid; place-items:center;
+}
+.tgt__ring svg{ position:absolute; inset:0; transform:rotate(-90deg); }
+.tgt__ring circle{ fill:none; stroke-width:8; stroke-linecap:round; }
+.tgt__ring .bg{ stroke: rgba(0,0,0,.08); }
+.tgt__ring .fg{ stroke: var(--tgt-accent); transition: stroke-dashoffset .3s ease; }
+.tgt__kbd{ padding:2px 6px; border-radius:6px; background:rgba(0,0,0,.06); }
+.tgt__sep{ flex:1; height:1px; background:rgba(0,0,0,.06); margin:8px 0; }
+.tgt canvas.confetti{ position: fixed; inset:0; pointer-events:none; z-index:9998; }
+
+/* === Tiny Goal Timer: не перекрывать контент === */
+body { padding-bottom: var(--tgt-safe, 0px); }
+
+/* учтём вырез (iPhone) и чуть поднимем виджет */
+.tgt { bottom: calc(20px + env(safe-area-inset-bottom)); }

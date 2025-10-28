@@ -343,3 +343,180 @@ document.querySelector('.streak')?.addEventListener('dblclick', () => {
   markStreakToday();
   if (typeof showToast === 'function') showToast('Двойной клик — зачёт ⚡');
 });
+
+// === Tiny Goal Timer =========================================================
+(function TinyGoalTimer(){
+  const LS_KEY = 'tgt_state_v1';
+  const SEC_DEFAULT = 15*60;
+
+  const state = load() || {
+    goal: 'Учусь 15 минут',
+    leftSec: SEC_DEFAULT,
+    running: false,
+    lastTick: null,
+    history: {} // по дням: { '2025-10-28': ['Цель 1', 'Цель 2'] }
+  };
+
+  // Создаём DOM
+  const root = document.createElement('div');
+  root.className = 'tgt';
+  root.innerHTML = `
+    <div class="tgt__row" style="margin-bottom:8px">
+      <input class="tgt__goal" type="text" placeholder="Моя цель на 15 минут">
+    </div>
+    <div class="tgt__row">
+      <div class="tgt__ring">
+        <svg viewBox="0 0 44 44" width="56" height="56">
+          <circle class="bg" cx="22" cy="22" r="18"></circle>
+          <circle class="fg" cx="22" cy="22" r="18" stroke-dasharray="${circLen()}" stroke-dashoffset="0"></circle>
+        </svg>
+        <div class="tgt__time">15:00</div>
+      </div>
+      <button class="tgt__btn tgt__btn--primary" data-act="toggle">Старт</button>
+      <button class="tgt__btn" data-act="add">+5</button>
+      <button class="tgt__btn" data-act="reset">Сброс</button>
+    </div>
+    <div class="tgt__hint">
+      <span><b>Хоткеи:</b></span>
+      <span><span class="tgt__kbd">P</span> старт/пауза</span>
+      <span><span class="tgt__kbd">S</span> +5 мин</span>
+      <span><span class="tgt__kbd">R</span> сброс</span>
+    </div>
+    <div class="tgt__sep"></div>
+    <div class="tgt__hint"><b>Сегодня:</b></div>
+    <ul class="tgt__hist"></ul>
+  `;
+  document.body.appendChild(root);
+
+  const el = {
+    goal: root.querySelector('.tgt__goal'),
+    time: root.querySelector('.tgt__time'),
+    fg:   root.querySelector('.fg'),
+    toggle: root.querySelector('[data-act="toggle"]'),
+    add: root.querySelector('[data-act="add"]'),
+    reset: root.querySelector('[data-act="reset"]'),
+    hist: root.querySelector('.tgt__hist')
+  };
+
+  // init
+  el.goal.value = state.goal || '';
+  renderTime();
+  renderHist();
+  setBtnText();
+
+  // listeners
+  root.addEventListener('click', (e)=>{
+    const act = e.target.dataset.act;
+    if(!act) return;
+    if(act==='toggle') toggle();
+    if(act==='add') { state.leftSec += 5*60; save(); renderTime(true); }
+    if(act==='reset') { state.leftSec = SEC_DEFAULT; state.running=false; save(); renderTime(true); setBtnText(); }
+  });
+  el.goal.addEventListener('input', ()=>{ state.goal = el.goal.value; save(); });
+
+  // hotkeys
+  window.addEventListener('keydown', (e)=>{
+    if (['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) return;
+    if(e.key.toLowerCase()==='p') toggle();
+    if(e.key.toLowerCase()==='s'){ state.leftSec+=5*60; save(); renderTime(true); }
+    if(e.key.toLowerCase()==='r'){ state.leftSec=SEC_DEFAULT; state.running=false; save(); renderTime(true); setBtnText(); }
+  });
+
+  // тикер
+  let raf;
+  function tick(ts){
+    if(!state.running){ cancelAnimationFrame(raf); return; }
+    if(state.lastTick==null) state.lastTick = ts;
+    const delta = Math.floor((ts - state.lastTick)/1000);
+    if(delta>0){
+      state.leftSec = Math.max(0, state.leftSec - delta);
+      state.lastTick = ts;
+      renderTime();
+      save();
+      if(state.leftSec===0){
+        state.running=false;
+        setBtnText();
+        celebrate();
+        pushHistory(state.goal || 'Цель');
+        renderHist();
+        state.leftSec = SEC_DEFAULT; // новый раунд
+        save();
+      }
+    }
+    raf = requestAnimationFrame(tick);
+  }
+
+  function toggle(){
+    state.running = !state.running;
+    state.lastTick = null;
+    setBtnText();
+    save();
+    if(state.running) raf = requestAnimationFrame(tick);
+  }
+
+  function setBtnText(){ el.toggle.textContent = state.running ? 'Пауза' : 'Старт'; }
+
+  function renderTime(snap=false){
+    const m = Math.floor(state.leftSec/60).toString().padStart(2,'0');
+    const s = (state.leftSec%60).toString().padStart(2,'0');
+    el.time.textContent = `${m}:${s}`;
+    const frac = state.leftSec / SEC_DEFAULT;
+    const len = circLen();
+    el.fg.style.strokeDasharray = len;
+    el.fg.style.strokeDashoffset = snap ? (len*(1-frac)).toString() : (len*(1-frac)).toFixed(2);
+  }
+
+  function renderHist(){
+    const d = today();
+    const arr = state.history[d] || [];
+    el.hist.innerHTML = arr.map(t=>`<li>✅ ${escapeHtml(t)}</li>`).join('') || '<li style="color:var(--tgt-muted)">Пока пусто — начни с маленькой цели.</li>';
+  }
+
+  function pushHistory(text){
+    const d = today();
+    state.history[d] = state.history[d] || [];
+    state.history[d].push(text);
+    save();
+  }
+
+  function celebrate(){
+    // простое конфетти на canvas
+    const c = document.createElement('canvas');
+    c.className = 'confetti'; document.body.appendChild(c);
+    const ctx = c.getContext('2d');
+    function resize(){ c.width = innerWidth; c.height = innerHeight; }
+    resize(); window.addEventListener('resize', resize, { once:true });
+
+    const N=160, parts=[];
+    for(let i=0;i<N;i++){
+      parts.push({
+        x: Math.random()*c.width, y: -10-Math.random()*50,
+        r: 2+Math.random()*4, vx: -1+Math.random()*2, vy: 2+Math.random()*3, a: Math.random()*Math.PI*2
+      });
+    }
+    let t=0;
+    (function anim(){
+      t++; ctx.clearRect(0,0,c.width,c.height);
+      parts.forEach(p=>{
+        p.x+=p.vx; p.y+=p.vy; p.a+=0.1;
+        ctx.save();
+        ctx.translate(p.x,p.y);
+        ctx.rotate(p.a);
+        ctx.fillStyle = `hsl(${(p.x+p.y)%360},85%,60%)`;
+        ctx.fillRect(-p.r, -p.r, p.r*2, p.r*2);
+        ctx.restore();
+      });
+      if(t<240) requestAnimationFrame(anim); else c.remove();
+    })();
+  }
+
+  // utils
+  function circLen(){ return 2*Math.PI*18; }
+  function today(){ return new Date().toISOString().slice(0,10); }
+  function save(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+  function load(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)); }catch{ return null; } }
+  function escapeHtml(s){ return s.replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+
+  // Если до перезагрузки таймер был «в пути», корректно продолжаем
+  if(state.running) requestAnimationFrame(tick);
+})();
